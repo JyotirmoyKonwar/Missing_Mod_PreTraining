@@ -4,10 +4,12 @@ import torch.nn as nn
 from model import PhysionetTransformer
 from utils import get_data_loaders
 import config
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 def main():
     """
-    Main function to train and validate the PhysionetTransformer model using settings from config.
+    Main function to train and validate the PhysionetTransformer model.
+    Now includes logging for F1 score, precision, and recall.
     """
     # Configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -28,8 +30,9 @@ def main():
     criterion = nn.CrossEntropyLoss()
     
     print(f"Starting training on {device}...")
+    # Update the log file header for the new metrics
     with open(config.LOG_FILE, "w") as f:
-        f.write("Epoch,Train Loss,Val Accuracy\n")
+        f.write("Epoch,Train Loss,Val Accuracy,F1 Score,Precision,Recall\n")
 
     for epoch in range(1, config.NUM_EPOCHS + 1):
         # Training phase
@@ -49,21 +52,32 @@ def main():
 
         # Validation phase
         model.eval()
-        correct, total = 0, 0
+        all_labels = []
+        all_preds = []
         with torch.no_grad():
             for physio_seq, labels in val_loader:
                 physio_seq, labels = physio_seq.to(device), labels.to(device)
                 logits, _ = model(physio_seq)
                 preds = logits.argmax(dim=1)
-                total += labels.size(0)
-                correct += (preds == labels).sum().item()
-        
-        val_accuracy = 100 * correct / total
-        
-        log_message = f"Epoch {epoch:02d} | Train Loss: {avg_train_loss:.4f} | Val Accuracy: {val_accuracy:.2f}%"
+                
+                all_preds.extend(preds.cpu().numpy())
+                all_labels.extend(labels.cpu().numpy())
+
+        # Calculate metrics using sklearn
+        val_accuracy = accuracy_score(all_labels, all_preds)
+        val_f1 = f1_score(all_labels, all_preds, average='weighted')
+        val_precision = precision_score(all_labels, all_preds, average='weighted')
+        val_recall = recall_score(all_labels, all_preds, average='weighted')
+
+        # Update console and file logging
+        log_message = (
+            f"Epoch {epoch:02d} | Train Loss: {avg_train_loss:.4f} | "
+            f"Val Acc: {val_accuracy:.4f} | F1: {val_f1:.4f} | "
+            f"Precision: {val_precision:.4f} | Recall: {val_recall:.4f}"
+        )
         print(log_message)
         with open(config.LOG_FILE, "a") as f:
-            f.write(f"{epoch},{avg_train_loss:.4f},{val_accuracy:.2f}\n")
+            f.write(f"{epoch},{avg_train_loss:.4f},{val_accuracy:.4f},{val_f1:.4f},{val_precision:.4f},{val_recall:.4f}\n")
 
     print("Training complete.")
 
