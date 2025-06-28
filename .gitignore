@@ -130,7 +130,7 @@ celerybeat.pid
 
 #datasets
 *.h5
-*.pkl
+.pkl
 
 # Environments
 .env

@@ -55,7 +55,7 @@ if __name__ == "__main__":
     # Option 2: Your original validation file
     # H5_FILE_TO_CHECK = 'val_data_1000_normalized.h5'
     # Option 3: Your newly merged file
-    H5_FILE_TO_CHECK = 'UAH_data_all.h5' # <-- Set this to the file you want to check
+    H5_FILE_TO_CHECK = 'Physionet_all.h5' # <-- Set this to the file you want to check
 
     LABEL_DATASET_NAME = 'y' # Based on your previous output, 'y' is the correct key for labels
 
