@@ -20,7 +20,8 @@ def evaluate_missing_modality_performance(model, test_loader):
         correct, total = 0, 0
         
         with torch.no_grad():
-            for uah_seq, physio_seq, _, labels in tqdm(test_loader, desc=f"Evaluating {scenario_name}"):
+            # FIX 4: Correctly unpack 3 items from the test_loader
+            for uah_seq, physio_seq, labels in tqdm(test_loader, desc=f"Evaluating {scenario_name}"):
                 uah_seq, physio_seq, labels = uah_seq.to(configs.DEVICE), physio_seq.to(configs.DEVICE), labels.to(configs.DEVICE)
                 
                 batch_mask = mask.unsqueeze(0).expand(uah_seq.size(0), -1).to(configs.DEVICE)
