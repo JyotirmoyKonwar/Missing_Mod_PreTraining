@@ -9,12 +9,12 @@ from evaluate import evaluate_missing_modality_performance
 
 def main():
     """
-    Main execution script that orchestrates the 3-stage training pipeline
-    and evaluates all saved models at the end.
+    Main script to orchestrate the 3-stage training pipeline and evaluate all
+    saved model checkpoints on the final held-out test set.
     """
     
-    train_loader, val_loader = get_dataloaders()
-    test_loader = val_loader
+    # --- UPDATED: Unpack all three dataloaders ---
+    train_loader, val_loader, test_loader = get_dataloaders()
 
     model = SharedLatentSpaceFusion().to(configs.DEVICE)
     trainer = MissingModalityTrainer(model, train_loader, val_loader)
@@ -47,9 +47,9 @@ def main():
     print(f"\nSaving final model state to {configs.LAST_EPOCH_MODEL_PATH}")
     torch.save(model.state_dict(), configs.LAST_EPOCH_MODEL_PATH)
 
-    # --- Final Evaluation ---
+    # --- Final Evaluation on the TEST SET ---
     print("\n" + "="*50)
-    print("      COMPREHENSIVE FINAL MODEL EVALUATION")
+    print("      COMPREHENSIVE FINAL MODEL EVALUATION ON TEST SET")
     print("="*50)
 
     models_to_evaluate = {
@@ -64,9 +64,10 @@ def main():
         try:
             evaluation_model = SharedLatentSpaceFusion().to(configs.DEVICE)
             evaluation_model.load_state_dict(torch.load(model_path, map_location=configs.DEVICE))
+            # --- UPDATED: Pass the test_loader to the evaluation function ---
             evaluate_missing_modality_performance(evaluation_model, test_loader)
         except FileNotFoundError:
-            print(f"Could not find model file. Skipping evaluation.")
+            print(f"Could not find model file '{model_path}'. Skipping evaluation.")
     
     print("\nProcess finished!")
 
