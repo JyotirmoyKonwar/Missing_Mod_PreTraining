@@ -4,7 +4,7 @@ import torch
 
 # -- Environment --
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-NUM_WORKERS = 2
+NUM_WORKERS = 2 # ADDED: For DataLoader, as per system suggestion
 
 # -- Data & File Paths --
 UAH_DATA_PATH = '/csehome/p23iot002/Missing_Mod/UAH_Encoder/UAH_data_all.h5'
@@ -32,18 +32,22 @@ ATTENTION_HEADS = 4
 
 # -- Training Hyperparameters --
 BATCH_SIZE = 128
-NUM_EPOCHS_STAGE1 = 20
-NUM_EPOCHS_STAGE2 = 50
-NUM_EPOCHS_STAGE3 = 30
+NUM_EPOCHS_STAGE1 = 10
+NUM_EPOCHS_STAGE2 = 25
+NUM_EPOCHS_STAGE3 = 15
 INITIAL_LR = 1e-4
 
 # -- Stage-Specific Config --
+# Stage 1: Warm-up
 STAGE1_ALPHA, STAGE1_BETA = 0.05, 0.05
+# Stage 2: Joint Training
 STAGE2_ALPHA, STAGE2_BETA = 0.2, 0.15
+# Stage 3: Fine-tuning
 STAGE3_ALPHA, STAGE3_BETA = 0.3, 0.25
 
 # -- Advanced Configs from Roadmap --
-ENCODER_LR_FACTOR = 0.1
+ENCODER_LR_FACTOR = 0.1  # Encoder LR = INITIAL_LR * 0.1
+PHYSIO_ONLY_LOSS_WEIGHT = 1.0
 
 # -- Loss Function Weights --
 GAMMA = 0.1       # Regularization
