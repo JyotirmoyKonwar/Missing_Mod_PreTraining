@@ -11,6 +11,7 @@ class MissingModalityTrainer:
         self.model = model.to(configs.DEVICE)
         self.train_loader = train_loader
         self.val_loader = val_loader
+        self.global_epoch = 0 
         self.loss_fn = MultiComponentLoss()
         
         # Optimizer for the main fusion model (all non-encoder parts)
@@ -50,9 +51,14 @@ class MissingModalityTrainer:
         best_val_acc, min_loss_for_best_acc = 0.0, float('inf')
 
         for epoch in range(1, epochs + 1):
-            # Check if unfreezing happens and update optimizer if needed
-            if self.model.progressive_unfreeze(epoch):
-                self._update_encoder_optimizer()
+            
+            for epoch in range(1, epochs + 1):
+                # count epochs globally
+                self.global_epoch += 1
+
+                # use the cumulative epoch for progressive unfreezing
+                if self.model.progressive_unfreeze(self.global_epoch):
+                    self._update_encoder_optimizer()
             
             train_metrics = self._train_epoch()
             val_metrics = self._validate_epoch()

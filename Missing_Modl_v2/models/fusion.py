@@ -19,10 +19,10 @@ class SharedLatentSpaceFusion(nn.Module):
             50: ['embed']
         }"""
         self.unfreeze_schedule = {
-            10: ['classifier'],
-            20: ['transformer.layers.2'], # Unfreeze last transformer layer
-            30: ['transformer.layers.1', 'transformer.layers.0'],
-            50: ['embed']
+            10: ['transformer.layers.2'],         # last encoder block
+            20: ['transformer.layers.1'],         # mid block
+            30: ['transformer.layers.0'],         # first block
+            40: ['embed']                         # token/projector layer
         }
         
         for param in self.uah_encoder.parameters(): param.requires_grad = False
